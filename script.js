@@ -2,8 +2,6 @@ class Calculator {
   constructor(previousOperandElement, currentOperandElement) {
     this.previousOperandElement = previousOperandElement;
     this.currentOperandElement = currentOperandElement;
-    this.displayingResult = false;
-    this.IsfirstCalculation = true;
     this.clearAll();
   }
 
@@ -13,11 +11,14 @@ class Calculator {
     this.currentResult = undefined;
     this.operation = undefined;
     this.displayingResult = false;
-    this.IsfirstCalculation = true;
+    this.isFirstCalculation = true;
   }
 
   clear() {
-    if (this.currentOperand != typeof "string") {
+    if (
+      this.currentOperand === undefined ||
+      this.currentOperand === this.currentResult
+    ) {
       return;
     }
 
@@ -65,12 +66,16 @@ class Calculator {
       this.calculate();
       this.operation = operation;
       this.previousOperand += `${this.currentOperandElement.innerText} ${operation} `;
-      if (this.IsfirstCalculation) {
+      if (this.isFirstCalculation) {
         this.currentOperand = "";
-        this.IsfirstCalculation = false;
+        this.isFirstCalculation = false;
       } else {
         this.currentOperand = this.currentResult;
         this.displayingResult = true;
+      }
+
+      if (operation === "=") {
+        console.log(this.currentResult)
       }
     }
   }
@@ -105,14 +110,14 @@ class Calculator {
           } else {
             this.currentResult = this.currentResult / currentCalculation;
           }
+          break;
         default:
           return;
       }
     }
   }
 
-  
-  cleanDisplay(number) {
+  formatDisplay(number) {
     const stringNumber = number.toString();
     const integerDigits = parseFloat(stringNumber.split(".")[0]);
     const decimalDigits = stringNumber.split(".")[1];
@@ -120,7 +125,9 @@ class Calculator {
     if (isNaN(integerDigits)) {
       intergerDisplay = "";
     } else {
-      intergerDisplay= integerDigits.toLocaleString("en", {maximumFractionDigits: 0 });
+      intergerDisplay = integerDigits.toLocaleString("en", {
+        maximumFractionDigits: 0,
+      });
     }
 
     if (decimalDigits != null) {
@@ -131,7 +138,7 @@ class Calculator {
   }
 
   updateDisplay() {
-    this.currentOperandElement.innerText = this.cleanDisplay(this.currentOperand);
+    this.currentOperandElement.innerText = this.formatDisplay(this.currentOperand);
     this.previousOperandElement.innerText = this.previousOperand;
   }
 }
@@ -173,4 +180,39 @@ clearButton.addEventListener("click", () => {
 plusMinusButton.addEventListener("click", () => {
   calc.reverseSign();
   calc.updateDisplay();
+});
+
+document.addEventListener("keydown", (event) => {
+  const KEYS = ["1", "2","3", "4", "5", "6", "7", "8", "9", "0", ".", "+", "-", "*", "/", "=", "Enter", "Backspace", "Delete"];
+  const key = event.key;
+  if (!KEYS.includes(event.key)) {
+    return;
+  } else {
+    if (key === "Backspace") {
+      calc.clear();
+      calc.updateDisplay();
+    } else if (key === "Delete") {
+      calc.clearAll();
+      calc.updateDisplay();
+    } else if (key === "Enter" || key === "=") {
+      event.preventDefault();
+      calc.selectOperation("=");
+      calc.updateDisplay();
+    } else if (key === "/") {
+      calc.selectOperation("÷");
+      calc.updateDisplay();
+    } else if (key === "*" || key === "X" || key === "x") {
+      calc.selectOperation("x");
+      calc.updateDisplay();
+    } else if (key === "+") {
+      calc.selectOperation("+");
+      calc.updateDisplay();
+    } else if (key === "-") {
+      calc.selectOperation("-");
+      calc.updateDisplay();
+    } else {
+      calc.appendNumber(event.key);
+      calc.updateDisplay();
+    } 
+  }
 });
