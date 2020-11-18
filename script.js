@@ -10,6 +10,7 @@ class Calculator {
   constructor(previousOperandElement, currentOperandElement) {
     this.previousOperandElement = previousOperandElement;
     this.currentOperandElement = currentOperandElement;
+    this.MAX_DIGITS = 16;
     this.clearAll();
   }
 
@@ -74,9 +75,19 @@ class Calculator {
     if (inputNumber === "." && this.currentOperand === "") {
       this.currentOperand = "0.";
     } else {
-      this.currentOperand += inputNumber;
+      // Clamps the number of digits
+      if (this.currentOperand.length > 0) {
+        let numberPattern = /\d+/g;
+        let digits = this.currentOperand.match(numberPattern).join("");
+        if (digits.length < this.MAX_DIGITS) {
+          this.currentOperand += inputNumber;
+        }
+      } else {
+        this.currentOperand += inputNumber;
+      }
     }
   }
+
   /**
    * Updates the previous operand history from the operation selected
    * @param {string} operation
