@@ -1,10 +1,21 @@
 class Calculator {
+  // Records state for the calculator and updates DOM elements when
+  // caluclations made.
+
+  /**
+   * Constuctor that records DOM elements to update.
+   * @param {Node} previousOperandElement DOM element to display previous calculation
+   * @param {Node} currentOperandElement DOM element to display current operand
+   */
   constructor(previousOperandElement, currentOperandElement) {
     this.previousOperandElement = previousOperandElement;
     this.currentOperandElement = currentOperandElement;
     this.clearAll();
   }
 
+  /**
+   * Clears the display by reseting all the display and state variables.
+   */
   clearAll() {
     this.currentOperand = "";
     this.previousOperand = "";
@@ -14,7 +25,11 @@ class Calculator {
     this.isFirstCalculation = true;
   }
 
+  /**
+   * Removes last character from current operand.
+   */
   clear() {
+    // Prevents user from clearing the result or an empty display
     if (
       this.currentOperand === undefined ||
       this.currentOperand === this.currentResult
@@ -22,40 +37,52 @@ class Calculator {
       return;
     }
 
-    this.currentOperand = this.currentOperand.substring(
-      0,
-      this.currentOperand.length - 1
-    );
+    this.currentOperand = this.currentOperand.slice(0, -1);
 
+    // Sets display to "0" when user clears all charaters from display
     if (this.currentOperand === "") {
       this.currentOperand = "0";
     }
   }
 
-  appendNumber(number) {
+  /**
+   * Appends a number to the current operand.
+   * @param {string} inputNumber
+   */
+  appendNumber(inputNumber) {
+    // Prevents user entering additional numbers after the equals signs
     if (this.previousOperand.includes("=")) {
       return;
     }
+    // Resets current operand after first calculation
     if (this.displayingResult) {
       this.currentOperand = "";
       this.displayingResult = false;
     }
-    if (number === "." && this.currentOperand.includes(".")) {
+
+    // Prevents user entering additional decimals
+    if (inputNumber === "." && this.currentOperand.includes(".")) {
       return;
     }
 
+    // Prevents user entering multiple "0s"
     if (this.currentOperand === "0") {
       this.currentOperand = "";
     }
 
-    if (number === "." && this.currentOperand === "") {
+    // Adds "0" before a number starting with a decimal
+    if (inputNumber === "." && this.currentOperand === "") {
       this.currentOperand = "0.";
     } else {
-      this.currentOperand += number;
+      this.currentOperand += inputNumber;
     }
   }
-
+  /**
+   * Updates the previous operand history from the operation selected
+   * @param {string} operation
+   */
   selectOperation(operation) {
+    // Prevents user entering equals signs with no calculation or after the result is calculated
     if (this.currentOperand) {
       if (operation === "=" && this.previousOperand === "") {
         return;
@@ -63,9 +90,18 @@ class Calculator {
         return;
       }
 
+      // Prevents trailing decimals in display
+      if (this.currentOperand.slice(-1) === ".") {
+        this.currentOperand = this.currentOperand.slice(0, -1);
+        this.updateDisplay();
+      }
+
+      // Calculates result and appends to previous operand history
       this.calculate();
       this.operation = operation;
       this.previousOperand += `${this.currentOperandElement.innerText} ${operation} `;
+
+      // Clears current operand display the first time an operation is selected
       if (this.isFirstCalculation) {
         this.currentOperand = "";
         this.isFirstCalculation = false;
@@ -73,13 +109,12 @@ class Calculator {
         this.currentOperand = this.currentResult;
         this.displayingResult = true;
       }
-
-      if (operation === "=") {
-        console.log(this.currentResult)
-      }
     }
   }
 
+  /**
+   * Adds or removes the minus sign from the current operand
+   */
   reverseSign() {
     if (parseFloat(this.currentOperand) > 0) {
       this.currentOperand = parseFloat(this.currentOperand) * -1;
@@ -89,6 +124,9 @@ class Calculator {
     }
   }
 
+  /**
+   * Returns the result of a selected calculation
+   */
   calculate() {
     if (this.currentResult === undefined) {
       this.currentResult = parseFloat(this.currentOperand);
@@ -105,6 +143,7 @@ class Calculator {
           this.currentResult = this.currentResult * currentCalculation;
           break;
         case "÷":
+          // Prevents errors with zero divison
           if (currentCalculation === 0) {
             this.currentResult = "NaN";
           } else {
@@ -116,15 +155,20 @@ class Calculator {
       }
     }
   }
-
+  /**
+   * Reformats the result to be displayed in a comma puncuated format
+   * @param {number} number
+   */
   formatDisplay(number) {
     const stringNumber = number.toString();
+    // Splits the current operand into two strings at the decimal point.
     const integerDigits = parseFloat(stringNumber.split(".")[0]);
     const decimalDigits = stringNumber.split(".")[1];
     let intergerDisplay;
     if (isNaN(integerDigits)) {
       intergerDisplay = "";
     } else {
+      // Comma seperated format for interger digits only
       intergerDisplay = integerDigits.toLocaleString("en", {
         maximumFractionDigits: 0,
       });
@@ -137,11 +181,73 @@ class Calculator {
     }
   }
 
+  /**
+   * Updates the calculater display elements with the result of the user intereaction
+   */
   updateDisplay() {
-    this.currentOperandElement.innerText = this.formatDisplay(this.currentOperand);
+    this.currentOperandElement.innerText = this.formatDisplay(
+      this.currentOperand
+    );
     this.previousOperandElement.innerText = this.previousOperand;
   }
 }
+
+/**
+ * Defines the key events that are fired when using a keyboard to interact with the keyboard
+ * @param {Event} event
+ */
+const keyboardControls = (event) => {
+  // prettier-ignore
+  const KEYS = [
+    "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
+    ".", "+", "-", "*", "x", "X", "/", "=",
+    "Enter", "Backspace", "Delete",
+  ];
+  const key = event.key;
+  if (!KEYS.includes(event.key)) {
+    return;
+  } else {
+    switch (key) {
+      case "Backspace":
+        calc.clear();
+        calc.updateDisplay();
+        break;
+      case "Delete":
+        calc.clearAll();
+        calc.updateDisplay();
+        break;
+      case "Enter":
+      case "=":
+        event.preventDefault();
+        calc.selectOperation("=");
+        calc.updateDisplay();
+        break;
+      case "/":
+        calc.selectOperation("÷");
+        calc.updateDisplay();
+        break;
+      case "*":
+      case "x":
+      case "X":
+        calc.selectOperation("x");
+        calc.updateDisplay();
+        break;
+      case "+":
+        calc.selectOperation("+");
+        calc.updateDisplay();
+        break;
+      case "-":
+        calc.selectOperation("-");
+        calc.updateDisplay();
+        break;
+      default:
+        calc.appendNumber(event.key);
+        calc.updateDisplay();
+    }
+  }
+};
+
+// Dom element selectors
 
 const numButtons = document.querySelectorAll("[data-number]");
 const operatorButtons = document.querySelectorAll("[data-operator]");
@@ -151,7 +257,12 @@ const allClearButton = document.querySelector("[data-all-clear]");
 const previousOperand = document.querySelector("[data-previous-operand]");
 const currentOperand = document.querySelector("[data-current-operand]");
 
+/**
+ * Creates instance of calculator for setting user generated events
+ */
 const calc = new Calculator(previousOperand, currentOperand);
+
+// Setting all eventlistners for using the calculator
 
 numButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -182,37 +293,4 @@ plusMinusButton.addEventListener("click", () => {
   calc.updateDisplay();
 });
 
-document.addEventListener("keydown", (event) => {
-  const KEYS = ["1", "2","3", "4", "5", "6", "7", "8", "9", "0", ".", "+", "-", "*", "/", "=", "Enter", "Backspace", "Delete"];
-  const key = event.key;
-  if (!KEYS.includes(event.key)) {
-    return;
-  } else {
-    if (key === "Backspace") {
-      calc.clear();
-      calc.updateDisplay();
-    } else if (key === "Delete") {
-      calc.clearAll();
-      calc.updateDisplay();
-    } else if (key === "Enter" || key === "=") {
-      event.preventDefault();
-      calc.selectOperation("=");
-      calc.updateDisplay();
-    } else if (key === "/") {
-      calc.selectOperation("÷");
-      calc.updateDisplay();
-    } else if (key === "*" || key === "X" || key === "x") {
-      calc.selectOperation("x");
-      calc.updateDisplay();
-    } else if (key === "+") {
-      calc.selectOperation("+");
-      calc.updateDisplay();
-    } else if (key === "-") {
-      calc.selectOperation("-");
-      calc.updateDisplay();
-    } else {
-      calc.appendNumber(event.key);
-      calc.updateDisplay();
-    } 
-  }
-});
+document.addEventListener("keydown", keyboardControls);

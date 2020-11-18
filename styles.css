@@ -1,3 +1,5 @@
+/* General Styling */
+
 *,
 *::before,
 *::after {
@@ -20,20 +22,20 @@ body {
   grid-template-rows: minmax(120px, auto) repeat(4, 100px);
 }
 
-/* For small laptops and large tablets */ 
+/* For small laptops and large tablets */
 
 @media only screen and (max-width: 1025px) {
-    body {
-      font-size: 1.8rem;
-    }
-  
-    .calculator-grid {
-      grid-template-columns: repeat(5, 90px);
-      grid-template-rows: minmax(120px, auto) repeat(4, 100px);
-    }
+  body {
+    font-size: 1.8rem;
   }
 
-/* For small tablets and phones */ 
+  .calculator-grid {
+    grid-template-columns: repeat(5, 90px);
+    grid-template-rows: minmax(120px, auto) repeat(4, 100px);
+  }
+}
+
+/* For small tablets and phones */
 
 @media only screen and (max-width: 520px) {
   body {
@@ -46,9 +48,9 @@ body {
   }
 }
 
-/* For small phones */ 
+/* For small phones */
 
-@media only screen and (max-width: 325px) {
+@media only screen and (max-width: 425px) {
   body {
     font-size: 1.2rem;
   }
