@@ -94,7 +94,7 @@ class Calculator {
    */
   selectOperation(operation) {
     // Prevents user entering equals signs with no calculation or after the result is calculated
-    if (this.currentOperand) {
+    if (this.currentOperand && !this.displayingResult) {
       if (operation === "=" && this.previousOperand === "") {
         return;
       } else if (this.previousOperand.includes("=")) {
@@ -117,8 +117,20 @@ class Calculator {
         this.currentOperand = "";
         this.isFirstCalculation = false;
       } else {
-        this.currentOperand = this.currentResult;
+        this.currentOperand = this.currentResult.toString();
         this.displayingResult = true;
+      }
+    } else {
+       // Resets after the equals operation is selected 
+      if (this.displayingResult) {
+        if (operation !== "=" && this.previousOperand.includes("=")) {
+          this.previousOperand = "";
+          this.calculate();
+          this.operation = operation;
+          this.previousOperand += `${this.currentOperandElement.innerText} ${operation} `;
+          this.currentOperand = "";
+          this.updateDisplay();
+        } 
       }
     }
   }
@@ -176,7 +188,8 @@ class Calculator {
     const integerDigits = parseFloat(stringNumber.split(".")[0]);
     const decimalDigits = stringNumber.split(".")[1];
     let intergerDisplay;
-    if (isNaN(integerDigits)) {
+    // Checks for zero division
+    if (isNaN(integerDigits) && this.currentResult !== "NaN") {
       intergerDisplay = "";
     } else {
       // Comma seperated format for interger digits only
@@ -184,7 +197,7 @@ class Calculator {
         maximumFractionDigits: 0,
       });
     }
-
+    // checks for decimal numbers
     if (decimalDigits != null) {
       return `${intergerDisplay}.${decimalDigits}`;
     } else {
