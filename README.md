@@ -7,7 +7,7 @@ Calculator tool made using vanilla JavaScript, CSS and HTML. [Live demo](https:/
 * CSS3
 
 ## Description
-**Calculator** is, well, exactly that, a calculator for calculating simple arithmetic. The aim of the project was to recreate all the basic functionality of a calculator using pure JavaScript and CSS.
+Calculator is, well, exactly that, a calculator for calculating simple arithmetic. The aim of the project was to recreate all the basic functionality of a calculator using pure JavaScript and CSS.
 
 ## Setup/Installation Requirements
 
